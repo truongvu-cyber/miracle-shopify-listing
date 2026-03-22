@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-utils/schema.json",
+  "productName": "Miracle Shopify Listing",
+  "version": "0.1.0",
+  "identifier": "com.miracle.shopify-listing",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Miracle Shopify Listing",
+        "width": 1280,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "minWidth": 900,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "copyright": "© 2026 Miracle Team",
+    "category": "Productivity",
+    "shortDescription": "Tự động tạo CSV product listing chuẩn Shopify",
+    "longDescription": "Miracle Shopify Listing - Desktop app tự động tạo CSV product listing chuẩn Shopify 28 cột. Hỗ trợ quét ảnh từ Google Drive và thư mục máy tính, matching tự động, xuất CSV.",
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    },
+    "windows": {
+      "wix": null
+    }
+  }
+}

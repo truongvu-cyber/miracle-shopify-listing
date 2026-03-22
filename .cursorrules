@@ -1,0 +1,50 @@
+# Shopify Listing Generator — Project Rules
+
+## Tech Stack
+Tauri v2 (Rust) + React 19 + TypeScript + Tailwind CSS v4 + Vite + Zustand
+
+## Conventions
+- TypeScript strict mode, KHÔNG dùng `any`
+- Functional components + hooks only
+- PascalCase: components | camelCase: functions/variables | kebab-case: filenames
+- Absolute imports via `@/`
+- Tailwind utility classes only, KHÔNG custom CSS trừ bắt buộc
+- Rust: snake_case theo convention chuẩn
+
+## Shopify CSV — 57 CỘT (theo file thực tế của store)
+Handle | Title | Body (HTML) | Vendor | Product Category | Type | Tags | Published
+| Option1 Name | Option1 Value | Option1 Linked To | Option2 Name | Option2 Value
+| Option2 Linked To | Option3 Name | Option3 Value | Option3 Linked To | Variant SKU
+| Variant Grams | Variant Inventory Tracker | Variant Inventory Policy
+| Variant Fulfillment Service | Variant Price | Variant Compare At Price
+| Variant Requires Shipping | Variant Taxable | Unit Price Total Measure
+| Unit Price Total Measure Unit | Unit Price Base Measure | Unit Price Base Measure Unit
+| Variant Barcode | Image Src | Image Position | Image Alt Text | Gift Card | SEO Title
+| SEO Description | Clean Title (product.metafields.custom.clean_title)
+| Last Sold Date (product.metafields.custom.last_sold_date)
+| Product rating count (product.metafields.reviews.rating_count)
+| Activity (product.metafields.shopify.activity)
+| Age group (product.metafields.shopify.age-group)
+| Closure type (product.metafields.shopify.closure-type)
+| Color (product.metafields.shopify.color-pattern)
+| Footwear material (product.metafields.shopify.footwear-material)
+| Heel height type (product.metafields.shopify.heel-height-type)
+| Occasion style (product.metafields.shopify.occasion-style)
+| Shoe features (product.metafields.shopify.shoe-features)
+| Shoe size (product.metafields.shopify.shoe-size)
+| Sneaker style (product.metafields.shopify.sneaker-style)
+| Target gender (product.metafields.shopify.target-gender)
+| Toe style (product.metafields.shopify.toe-style)
+| Variant Image | Variant Weight Unit | Variant Tax Code | Cost per item | Status
+
+## CSV Row Rules
+- Dòng 1 (product): Điền ĐẦY ĐỦ tất cả cột product-level + variant đầu tiên
+- Dòng 2+ (variants): Chỉ Handle + Option Values + Variant fields + Image. Cột product-level TRỐNG.
+- Dòng image-only: Handle + Image Src + Image Position. Tất cả cột khác TRỐNG.
+- Handle dùng chung cho toàn bộ variants + image rows của cùng 1 product.
+
+## Image Matching Rule
+Tên file ảnh trên Drive PHẢI chứa CẢ Option1 Value (Style) VÀ Option2 Value (Player).
+Ví dụ: Option1 Value = "College Navy", Option2 Value = "Sam Darnold-14"
+→ File phải có tên chứa "college navy" + "sam darnold" (case-insensitive, bỏ số jersey)
+Nếu không match → đánh dấu warning, để user chọn thủ công.
