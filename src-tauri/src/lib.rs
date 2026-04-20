@@ -27,6 +27,8 @@ pub fn run() {
             commands::storage::load_history,
             commands::storage::delete_history,
             commands::storage::get_app_data_dir,
+            commands::storage::save_history_raw,
+            commands::storage::load_history_raw,
             commands::auth::login,
             commands::auth::logout,
             commands::auth::get_current_user,

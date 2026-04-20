@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { useListingStore } from "@/hooks/useListingStore";
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { useAuthStore } from "@/hooks/useAuthStore";
 import { SettingsModal } from "@/components/listing/SettingsModal";
 import {
   FilePlus2,
@@ -16,8 +15,6 @@ import {
   Monitor,
   Menu,
   X,
-  Users,
-  LogOut,
 } from "lucide-react";
 
 function SidebarLink({
@@ -86,13 +83,6 @@ export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { jobs, completedJobsToday } = useListingStore();
   const completed = completedJobsToday();
-  const { user } = useAuthStore();
-
-  async function handleLogout() {
-    const { logout } = useAuthStore.getState();
-    await logout();
-    window.location.href = "/login";
-  }
 
   // Close sidebar on route change (mobile)
   const closeSidebar = () => setSidebarOpen(false);
@@ -158,32 +148,7 @@ export function Layout() {
         <nav className="flex-1 px-3 py-4 space-y-1">
           <SidebarLink to="/" icon={FilePlus2} label="Tạo Listing" end onClick={closeSidebar} />
           <SidebarLink to="/history" icon={History} label="Lịch sử" onClick={closeSidebar} />
-          {user?.role === "admin" && (
-            <SidebarLink to="/users" icon={Users} label="Tài khoản" onClick={closeSidebar} />
-          )}
         </nav>
-
-        {/* User Info */}
-        <div className="px-3 pb-2">
-          <div className="flex items-center gap-3 px-4 py-2">
-            <div className="h-7 w-7 rounded-full bg-[var(--brand-muted)] flex items-center justify-center">
-              <span className="text-xs font-bold text-[var(--brand)]">
-                {user?.displayName?.charAt(0)?.toUpperCase() || "?"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-[var(--text-sidebar-active)] truncate">{user?.displayName}</p>
-              <p className="text-[10px] text-[var(--text-sidebar)]">@{user?.username}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-1 rounded text-[var(--text-sidebar)] hover:text-[var(--danger)] transition-colors cursor-pointer"
-              title="Đăng xuất"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
 
         {/* Theme toggle */}
         <div className="px-3 pb-2">

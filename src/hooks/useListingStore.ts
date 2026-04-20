@@ -12,6 +12,7 @@ interface ListingState {
     key: K,
     value: ListingFormData[K]
   ) => void;
+  loadFormData: (data: ListingFormData) => void;
   resetForm: () => void;
   setFormErrors: (errors: Record<string, string>) => void;
   clearFormErrors: () => void;
@@ -26,6 +27,7 @@ interface ListingState {
   removeOption: (index: number) => void;
   setOptionName: (index: number, name: string) => void;
   setOptionValues: (index: number, values: string[]) => void;
+  clearOptionValues: (index: number) => void;
 
   totalVariantCount: () => number;
   completedJobsToday: () => number;
@@ -45,6 +47,19 @@ export const useListingStore = create<ListingState>((set, get) => ({
     set((state) => ({
       formData: { ...state.formData, [key]: value },
     })),
+
+  loadFormData: (data) =>
+    set({
+      formData: {
+        ...DEFAULT_FORM_DATA,
+        ...data,
+        options:
+          data.options && data.options.length > 0
+            ? data.options.map((o) => ({ name: o.name, values: [...o.values] }))
+            : [{ name: "", values: [] }],
+      },
+      formErrors: {},
+    }),
 
   resetForm: () =>
     set({ formData: { ...DEFAULT_FORM_DATA, options: [{ name: "", values: [] }] }, formErrors: {} }),
@@ -105,6 +120,14 @@ export const useListingStore = create<ListingState>((set, get) => ({
     set((state) => {
       const options = [...state.formData.options];
       options[index] = { ...options[index], values };
+      return { formData: { ...state.formData, options } };
+    }),
+
+  clearOptionValues: (index) =>
+    set((state) => {
+      const options = [...state.formData.options];
+      if (!options[index]) return state;
+      options[index] = { ...options[index], values: [] };
       return { formData: { ...state.formData, options } };
     }),
 

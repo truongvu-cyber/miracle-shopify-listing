@@ -1,15 +1,16 @@
 import { useHistoryStore, type HistoryEntry } from "@/hooks/useHistoryStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, Pencil } from "lucide-react";
 
 interface HistoryTableProps {
   entries: HistoryEntry[];
   onDownload: (entry: HistoryEntry) => void;
   onDelete: (id: string) => void;
+  onEdit: (entry: HistoryEntry) => void;
 }
 
-export function HistoryTable({ entries, onDownload, onDelete }: HistoryTableProps) {
+export function HistoryTable({ entries, onDownload, onDelete, onEdit }: HistoryTableProps) {
   const { selectedIds, toggleSelect, selectAll, clearSelection, currentPage, pageSize } =
     useHistoryStore();
 
@@ -97,7 +98,14 @@ export function HistoryTable({ entries, onDownload, onDelete }: HistoryTableProp
                 {(currentPage - 1) * pageSize + index + 1}
               </td>
               <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
-                {entry.name}
+                <button
+                  type="button"
+                  onClick={() => onEdit(entry)}
+                  className="text-left hover:text-[var(--brand)] hover:underline transition-colors cursor-pointer"
+                  title="Mở để chỉnh sửa"
+                >
+                  {entry.name}
+                </button>
               </td>
               <td className="px-4 py-3 text-[var(--text-secondary)] font-mono text-xs">
                 {entry.sku || "-"}
@@ -113,8 +121,16 @@ export function HistoryTable({ entries, onDownload, onDelete }: HistoryTableProp
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => onEdit(entry)}
+                    title="Chỉnh sửa listing"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onDownload(entry)}
-                    title="Download CSV"
+                    title="Tải CSV"
                   >
                     <Download className="h-3.5 w-3.5" />
                   </Button>
@@ -122,7 +138,7 @@ export function HistoryTable({ entries, onDownload, onDelete }: HistoryTableProp
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(entry.id)}
-                    title="Delete"
+                    title="Xóa"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-[var(--danger)]" />
                   </Button>

@@ -132,3 +132,23 @@ pub async fn get_app_data_dir(app: tauri::AppHandle) -> Result<String, String> {
         .map(|s| s.to_string())
         .ok_or_else(|| "App data dir path contains invalid UTF-8".into())
 }
+
+// --- Raw History Commands (store entire history as a single JSON blob) ---
+
+/// Save the full history array as a raw JSON string.
+#[tauri::command]
+pub async fn save_history_raw(app: tauri::AppHandle, data: String) -> Result<(), String> {
+    let path = get_data_dir(&app)?.join("history.json");
+    fs::write(&path, data).map_err(|e| format!("Failed to write history: {}", e))?;
+    Ok(())
+}
+
+/// Load the full history array as a raw JSON string. Returns "[]" if not found.
+#[tauri::command]
+pub async fn load_history_raw(app: tauri::AppHandle) -> Result<String, String> {
+    let path = get_data_dir(&app)?.join("history.json");
+    if !path.exists() {
+        return Ok("[]".to_string());
+    }
+    fs::read_to_string(&path).map_err(|e| format!("Failed to read history: {}", e))
+}

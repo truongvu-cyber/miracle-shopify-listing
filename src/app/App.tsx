@@ -3,36 +3,15 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import { Toaster } from "sonner";
 import { useThemeStore } from "@/hooks/useThemeStore";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { Loader2 } from "lucide-react";
+import { useHistoryStore } from "@/hooks/useHistoryStore";
 
-function AuthGuard() {
-  const { user, loading, checkAuth } = useAuthStore();
+export function App() {
   const resolved = useThemeStore((s) => s.resolved);
+  const loadFromDisk = useHistoryStore((s) => s.loadFromDisk);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login if not authenticated
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
-    }
-    if (!loading && user && window.location.pathname === "/login") {
-      window.location.href = "/";
-    }
-  }, [user, loading]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-app)]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand)]" />
-      </div>
-    );
-  }
+    loadFromDisk();
+  }, [loadFromDisk]);
 
   return (
     <>
@@ -50,8 +29,4 @@ function AuthGuard() {
       />
     </>
   );
-}
-
-export function App() {
-  return <AuthGuard />;
 }

@@ -1,14 +1,21 @@
 import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { HistoryTable } from "@/components/history/HistoryTable";
 import { MonthFilter } from "@/components/history/MonthFilter";
 import { HistoryActions } from "@/components/history/HistoryActions";
 import { useHistoryStore, type HistoryEntry } from "@/hooks/useHistoryStore";
+import { useListingStore } from "@/hooks/useListingStore";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { toast } from "sonner";
+import { invoke } from "@tauri-apps/api/core";
+import { save } from "@tauri-apps/plugin-dialog";
+import { rowsToCSV, type ShopifyCSVHeaderType } from "@/lib/shopify-csv";
+import { generateSlug } from "@/lib/slug";
 
 export function ListingHistory() {
+  const navigate = useNavigate();
   const {
     searchQuery,
     setSearchQuery,
@@ -19,25 +26,57 @@ export function ListingHistory() {
     totalPages,
     filteredEntries,
   } = useHistoryStore();
+  const loadFormData = useListingStore((s) => s.loadFormData);
 
   const entries = paginatedEntries();
   const pages = totalPages();
   const total = filteredEntries().length;
 
-  const handleDownload = useCallback((entry: HistoryEntry) => {
-    toast.info(`File: ${entry.csvPath}`);
+  const handleDownload = useCallback(async (entry: HistoryEntry) => {
+    if (!entry.csvData || entry.csvData.length === 0) {
+      toast.error("Listing này không có dữ liệu CSV");
+      return;
+    }
+    try {
+      const destPath = await save({
+        defaultPath: `${generateSlug(entry.name)}.csv`,
+        filters: [{ name: "CSV", extensions: ["csv"] }],
+      });
+      if (destPath) {
+        const csvContent = rowsToCSV(entry.csvData as Record<ShopifyCSVHeaderType, string>[]);
+        await invoke("write_csv_file", { csvContent, filePath: destPath });
+        toast.success(`Đã lưu tại: ${destPath}`);
+      }
+    } catch (err) {
+      const msg = typeof err === "string" ? err : "Lỗi khi lưu file";
+      toast.error(msg);
+    }
   }, []);
 
   const handleDelete = useCallback(
     (id: string) => {
+      if (!confirm("Xóa listing này khỏi lịch sử?")) return;
       deleteEntry(id);
-      toast.success("Listing deleted");
+      toast.success("Đã xóa listing");
     },
     [deleteEntry]
   );
 
+  const handleEdit = useCallback(
+    (entry: HistoryEntry) => {
+      if (!entry.formData) {
+        toast.error("Listing cũ không có dữ liệu form, không thể chỉnh sửa");
+        return;
+      }
+      loadFormData(entry.formData);
+      toast.success(`Đã mở "${entry.name}" để chỉnh sửa`);
+      navigate("/");
+    },
+    [loadFormData, navigate]
+  );
+
   const handleBulkDownload = useCallback((_ids: string[]) => {
-    toast.info("Bulk download not yet connected to backend");
+    toast.info("Bulk download chưa được hỗ trợ");
   }, []);
 
   return (
@@ -80,6 +119,7 @@ export function ListingHistory() {
           entries={entries}
           onDownload={handleDownload}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
 
         {/* Pagination */}

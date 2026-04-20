@@ -12,7 +12,6 @@ import { useCSVGenerator } from "@/hooks/useCSVGenerator";
 import { validateListingForm } from "@/lib/validators";
 import type { ListingJob } from "@/types/listing";
 import type { DriveFile } from "@/types/drive";
-import { useAuthStore } from "@/hooks/useAuthStore";
 import { toast } from "sonner";
 import { invoke } from "@tauri-apps/api/core";
 import { FileSpreadsheet, RotateCcw } from "lucide-react";
@@ -25,8 +24,7 @@ export function CreateListing() {
   const { results, runMatch, updateManualMatch, reset: resetMatcher } =
     useImageMatcher();
   const { generating, generateCSV } = useCSVGenerator();
-  const { addEntry } = useHistoryStore();
-  const { user } = useAuthStore();
+  const { addEntry, updateEntry, entries } = useHistoryStore();
   const [allDriveFiles, setAllDriveFiles] = useState<DriveFile[]>([]);
 
   async function handleGenerateCSV() {
@@ -52,9 +50,16 @@ export function CreateListing() {
 
     const variantCount = totalVariantCount();
     if (variantCount === 0) {
-      toast.error("Please add at least one option with values");
+      toast.error("Hãy thêm ít nhất 1 option với giá trị");
       return;
     }
+
+    // Detect if editing an existing entry (same title + sku)
+    const existing = entries.find(
+      (e) =>
+        e.name === formData.title.trim() &&
+        e.sku === formData.skuPrefix.trim()
+    );
 
     const jobId = crypto.randomUUID();
     const job: ListingJob = {
@@ -75,19 +80,26 @@ export function CreateListing() {
           csvData: csvRows as Record<string, string>[],
         });
 
-        // Lưu vào lịch sử
-        addEntry({
-          id: jobId,
+        const snapshot = {
           name: formData.title,
           sku: formData.skuPrefix,
-          variantCount: variantCount,
-          createdAt: new Date().toISOString(),
-          csvPath: "",
-          username: user?.username || "",
+          variantCount,
           csvData: csvRows as Record<string, string>[],
-        });
+          formData: JSON.parse(JSON.stringify(formData)),
+        };
 
-        toast.success(`Đã tạo ${csvRows.length} dòng CSV`);
+        if (existing) {
+          updateEntry(existing.id, snapshot);
+          toast.success(`Đã cập nhật "${formData.title}" (${csvRows.length} dòng)`);
+        } else {
+          addEntry({
+            id: jobId,
+            ...snapshot,
+            createdAt: new Date().toISOString(),
+            csvPath: "",
+          });
+          toast.success(`Đã tạo ${csvRows.length} dòng CSV`);
+        }
       } else {
         updateJobStatus(jobId, "failed", { errorMessage: "Không tạo được dữ liệu CSV" });
       }
@@ -123,7 +135,7 @@ export function CreateListing() {
   function handleReset() {
     resetForm();
     resetMatcher();
-    toast.info("Form reset");
+    toast.info("Đã làm mới form");
   }
 
   return (
